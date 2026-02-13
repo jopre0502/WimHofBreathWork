@@ -13,7 +13,7 @@ Letzte Aktualisierung: 2026-02-13
 **Phase 1 Status:**
 - [x] GitHub Repository erstellt → github.com/jopre0502/WimHofBreathWork
 - [x] Grundstruktur eingecheckt (HTML, Konzept, CLAUDE.md)
-- [ ] README.md mit Projekt-Overview
+- [x] README.md mit Projekt-Overview
 - [ ] GitHub Pages vorbereitet (Branch-Setup)
 
 ---
@@ -23,7 +23,7 @@ Letzte Aktualisierung: 2026-02-13
 **Nächste Schritte:**
 - [x] **TASK-005:** Phase 1.5 Polish (Vibration, Fullscreen, Atemtempo, Easing) → ✅
 - [x] **TASK-001:** GitHub Repo Setup → github.com/jopre0502/WimHofBreathWork ✅
-- [ ] **TASK-002:** README.md schreiben (jetzt unblocked)
+- [x] **TASK-002:** README.md geschrieben ✅
 - [ ] **TASK-003:** Audio-Snippets generieren (Katalog liegt bereit)
 
 **Entscheidungspunkte:**
@@ -41,7 +41,7 @@ Letzte Aktualisierung: 2026-02-13
 - [x] PROJEKT.md created + task structure defined
 - [x] GitHub Repository erstellt
 - [x] Dateien eingecheckt (`wim-hof-app.html`, `wim-hof-app.jsx`, Konzept)
-- [ ] README.md geschrieben
+- [x] README.md geschrieben
 - [ ] GitHub Pages Branch vorbereitet
 
 **Tasks:**
@@ -50,7 +50,7 @@ Letzte Aktualisierung: 2026-02-13
 |------|------|--------|--------------|--------|-------------|-----------|
 | **TASK-005** | Phase 1.5 Polish | ✅ completed | None | 45min | App-Update | — |
 | **TASK-001** | GitHub Repo Setup | ✅ completed | None | 30min | GitHub Repo | [Details](tasks/TASK-001-github-setup.md) |
-| **TASK-002** | README.md schreiben | 📋 pending | TASK-001 | 20min | README.md | [Details](tasks/TASK-002-readme.md) |
+| **TASK-002** | README.md schreiben | ✅ completed | TASK-001 | 20min | README.md | [Details](tasks/TASK-002-readme.md) |
 
 ---
 
@@ -198,4 +198,4 @@ _Noch keine abgeschlossenen Phasen. Nach Phase-Completion: Content nach `90_DOCS
 
 ---
 
-*Last updated: 2026-02-13 (TASK-001 GitHub Repo Setup completed)*
+*Last updated: 2026-02-13 (TASK-002 README.md completed)*
