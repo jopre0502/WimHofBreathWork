@@ -73,7 +73,7 @@ Letzte Aktualisierung: 2026-02-13
 
 | UUID | Task | Status | Dependencies | Effort | Deliverable | Task-File |
 |------|------|--------|--------------|--------|-------------|-----------|
-| **TASK-003** | Audio-Generierung | 📋 pending | TASK-002 | 2h | 14 Audio-Files | [Details](tasks/TASK-003-audio-gen.md) |
+| **TASK-003** | Audio-Generierung | 📋 pending | TASK-002 | 45min | 13 Audio-Files | [Details](tasks/TASK-003-audio-gen.md) |
 | **TASK-004** | Audio-Engine | 📋 pending | TASK-003 | 3h | JS Audio Logic | [Details](tasks/TASK-004-audio-engine.md) |
 
 </details>
