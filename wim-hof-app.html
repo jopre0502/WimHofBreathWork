@@ -134,6 +134,15 @@
       <div class="slider-track"><div class="slider-fill" id="fill-tempo"></div><input type="range" id="sl-tempo" min="2" max="8" value="4"></div>
     </div>
 
+    <div class="slider-group">
+      <div class="slider-header"><span>Audio</span><span class="slider-val" id="val-audio">An</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-audio"></div><input type="range" id="sl-audio" min="0" max="1" value="1"></div>
+    </div>
+    <div class="slider-group" id="grp-volume">
+      <div class="slider-header"><span>Lautstärke</span><span class="slider-val" id="val-volume">70%</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-volume"></div><input type="range" id="sl-volume" min="0" max="100" value="70"></div>
+    </div>
+
     <button class="btn-start" id="btn-start">Session starten</button>
   </div>
 
@@ -168,7 +177,7 @@
 <script>
 (function() {
   // --- State ---
-  const config = { rounds: 3, breaths: 30, retentionMax: 90, recoveryDuration: 15, breathCycle: 4 };
+  const config = { rounds: 3, breaths: 30, retentionMax: 90, recoveryDuration: 15, breathCycle: 4, audioEnabled: 1, audioVolume: 70 };
   let currentRound = 0;
   let retentionTimes = [];
   let animFrame = null;
@@ -191,9 +200,11 @@
     { id: 'retention', key: 'retentionMax', suffix: 's' },
     { id: 'recovery', key: 'recoveryDuration', suffix: 's' },
     { id: 'tempo', key: 'breathCycle', suffix: 's' },
+    { id: 'audio', key: 'audioEnabled', suffix: '', format: v => v ? 'An' : 'Aus' },
+    { id: 'volume', key: 'audioVolume', suffix: '%' },
   ];
 
-  sliders.forEach(({ id, key, suffix }) => {
+  sliders.forEach(({ id, key, suffix, format }) => {
     const sl = $('sl-' + id);
     const val = $('val-' + id);
     const fill = $('fill-' + id);
@@ -201,7 +212,7 @@
     function update() {
       const v = parseInt(sl.value);
       config[key] = v;
-      val.textContent = v + suffix;
+      val.textContent = format ? format(v) : v + suffix;
       const pct = ((v - sl.min) / (sl.max - sl.min)) * 100;
       fill.style.width = pct + '%';
     }
@@ -278,6 +289,122 @@
     return -(Math.cos(Math.PI * t) - 1) / 2;
   }
 
+  // --- Audio Engine ---
+  const audio = {
+    ctx: null,
+    bufferCache: new Map(),
+    ambientSource: null,
+    ambientGain: null,
+
+    SNIPPETS: [
+      'session_start', 'session_end', 'guide_01', 'guide_02', 'guide_03',
+      'motiv_01', 'motiv_02', 'motiv_03', 'motiv_04',
+      'breath_cue', 'recovery_end', 'round_done', 'ambient'
+    ],
+
+    FALLBACK: {
+      session_start: { freq: 440, dur: 0.6, type: 'sine' },
+      session_end:   { freq: 440, dur: 0.6, type: 'sine' },
+      guide_01:      { freq: 330, dur: 0.4, type: 'sine' },
+      guide_02:      { freq: 330, dur: 0.4, type: 'sine' },
+      guide_03:      { freq: 330, dur: 0.4, type: 'sine' },
+      motiv_01:      { freq: 520, dur: 0.3, type: 'sine' },
+      motiv_02:      { freq: 520, dur: 0.3, type: 'sine' },
+      motiv_03:      { freq: 520, dur: 0.3, type: 'sine' },
+      motiv_04:      { freq: 520, dur: 0.3, type: 'sine' },
+      breath_cue:    { freq: 880, dur: 0.08, type: 'sine' },
+      recovery_end:  { freq: 440, dur: 0.5, type: 'sine' },
+      round_done:    { freq: 440, dur: 0.5, type: 'sine' },
+    },
+
+    init() {
+      if (this.ctx) { this.ctx.resume(); return; }
+      this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    },
+
+    async loadAll() {
+      for (const name of this.SNIPPETS) {
+        try {
+          const res = await fetch('audio/' + name + '.mp3');
+          if (!res.ok) continue;
+          const buf = await res.arrayBuffer();
+          this.bufferCache.set(name, await this.ctx.decodeAudioData(buf));
+        } catch (e) { /* fallback tone used */ }
+      }
+    },
+
+    play(name) {
+      if (!config.audioEnabled || !this.ctx) return;
+      const vol = config.audioVolume / 100;
+      const buf = this.bufferCache.get(name);
+      if (buf) {
+        const src = this.ctx.createBufferSource();
+        const gain = this.ctx.createGain();
+        gain.gain.value = vol;
+        src.buffer = buf;
+        src.connect(gain).connect(this.ctx.destination);
+        src.start();
+        return;
+      }
+      const fb = this.FALLBACK[name];
+      if (fb) this.playTone(fb.freq, fb.dur, fb.type);
+    },
+
+    playTone(freq, dur, type) {
+      if (!this.ctx) return;
+      const vol = config.audioVolume / 100;
+      const osc = this.ctx.createOscillator();
+      const gain = this.ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      gain.gain.value = vol * 0.5;
+      gain.gain.setTargetAtTime(0, this.ctx.currentTime + dur * 0.7, dur * 0.1);
+      osc.connect(gain).connect(this.ctx.destination);
+      osc.start();
+      osc.stop(this.ctx.currentTime + dur);
+    },
+
+    startAmbient() {
+      if (!config.audioEnabled || !this.ctx || this.ambientSource) return;
+      const vol = config.audioVolume / 100;
+      const buf = this.bufferCache.get('ambient');
+      if (buf) {
+        this.ambientSource = this.ctx.createBufferSource();
+        this.ambientGain = this.ctx.createGain();
+        this.ambientGain.gain.value = vol * 0.15;
+        this.ambientSource.buffer = buf;
+        this.ambientSource.loop = true;
+        this.ambientSource.connect(this.ambientGain).connect(this.ctx.destination);
+        this.ambientSource.start();
+        return;
+      }
+      this.ambientSource = this.ctx.createOscillator();
+      this.ambientGain = this.ctx.createGain();
+      this.ambientSource.type = 'sine';
+      this.ambientSource.frequency.value = 110;
+      this.ambientGain.gain.value = vol * 0.06;
+      this.ambientSource.connect(this.ambientGain).connect(this.ctx.destination);
+      this.ambientSource.start();
+    },
+
+    stopAmbient() {
+      if (!this.ambientSource || !this.ctx) return;
+      if (this.ambientGain) {
+        this.ambientGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.3);
+      }
+      const src = this.ambientSource;
+      setTimeout(() => { try { src.stop(); } catch(e) {} }, 500);
+      this.ambientSource = null;
+      this.ambientGain = null;
+    },
+
+    stopAll() {
+      this.stopAmbient();
+      if (this.ctx) { this.ctx.close().catch(() => {}); this.ctx = null; }
+      this.bufferCache.clear();
+    }
+  };
+
   // --- Session Flow ---
   function startSession() {
     currentRound = 1;
@@ -286,12 +413,19 @@
     requestFullscreen();
     showScreen('session');
     $('btn-abort').style.display = 'block';
+    if (config.audioEnabled) {
+      audio.init();
+      audio.loadAll();
+      audio.play('session_start');
+      audio.startAmbient();
+    }
     runCountdown();
   }
 
   function endSession() {
     cancelAnimationFrame(animFrame);
     clearInterval(timerInterval);
+    audio.stopAll();
     releaseWake();
     exitFullscreen();
     $('btn-abort').style.display = 'none';
@@ -326,10 +460,12 @@
     const total = config.breaths;
     let start = performance.now();
     let guidanceState = 0;
+    let lastBreathPlayed = -1;
 
     setPhaseLabel('Phase 1 · Atmen');
     setGuidance('Atme tief ein… und lass los.');
     $('action-area').innerHTML = '';
+    audio.play('guide_01');
 
     function animate() {
       const elapsed = performance.now() - start;
@@ -339,6 +475,11 @@
         cancelAnimationFrame(animFrame);
         runRetention();
         return;
+      }
+
+      if (completed !== lastBreathPlayed) {
+        lastBreathPlayed = completed;
+        audio.play('breath_cue');
       }
 
       const cyclePos = (elapsed % CYCLE) / CYCLE;
@@ -365,6 +506,7 @@
       }
       if (guidanceState === 1 && completed >= total - 2) {
         guidanceState = 2;
+        audio.play('guide_02');
         setGuidance('Letzter Atemzug. Atme aus… und halte.');
       }
 
@@ -390,6 +532,7 @@
 
     function abortRetention() {
       vibrate(150);
+      audio.play('guide_03');
       clearInterval(timerInterval);
       const secs = Math.floor((Date.now() - startTime) / 1000);
       retentionTimes.push(secs);
@@ -409,12 +552,14 @@
 
       // Motivation
       if (secs > 10 && secs % 20 === 0 && motivIdx < motivations.length) {
+        audio.play('motiv_0' + (motivIdx + 1));
         setGuidance(motivations[motivIdx]);
         motivIdx++;
       }
 
       if (secs >= config.retentionMax) {
         clearInterval(timerInterval);
+        audio.play('guide_03');
         retentionTimes.push(secs);
         setGuidance('Zeit. Atme jetzt tief ein.');
         $('action-area').innerHTML = '';
@@ -441,10 +586,12 @@
 
       if (elapsed >= duration) {
         clearInterval(timerInterval);
+        audio.play('recovery_end');
         setGuidance('Langsam ausatmen.');
 
         setTimeout(() => {
           if (currentRound < config.rounds) {
+            audio.play('round_done');
             setGuidance('Gut gemacht. Nächste Runde.');
             setTimeout(() => {
               currentRound++;
@@ -461,6 +608,8 @@
   // --- Done ---
   function showDone() {
     vibrate([100, 50, 100, 50, 300]);
+    audio.play('session_end');
+    audio.stopAmbient();
     releaseWake();
     exitFullscreen();
     showScreen('done');

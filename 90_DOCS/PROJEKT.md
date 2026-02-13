@@ -21,10 +21,11 @@ Letzte Aktualisierung: 2026-02-13
 ## 🎯 Immediate Next Actions
 
 **Nächste Schritte:**
-- [x] **TASK-005:** Phase 1.5 Polish (Vibration, Fullscreen, Atemtempo, Easing) → ✅
-- [x] **TASK-001:** GitHub Repo Setup → github.com/jopre0502/WimHofBreathWork ✅
-- [x] **TASK-002:** README.md geschrieben ✅
-- [ ] **TASK-003:** Audio-Snippets generieren (Katalog liegt bereit)
+- [x] **TASK-005:** Phase 1.5 Polish (Vibration, Fullscreen, Atemtempo, Easing) ✅
+- [x] **TASK-001:** GitHub Repo Setup ✅
+- [x] **TASK-002:** README.md ✅
+- [x] **TASK-004:** Audio-Engine mit Platzhalter-Sounds ✅
+- [ ] **TASK-003:** Audio-Snippets generieren (manueller Schritt)
 
 **Entscheidungspunkte:**
 - Repo Public/Private: Public (für GitHub Pages Deployment)
@@ -74,7 +75,7 @@ Letzte Aktualisierung: 2026-02-13
 | UUID | Task | Status | Dependencies | Effort | Deliverable | Task-File |
 |------|------|--------|--------------|--------|-------------|-----------|
 | **TASK-003** | Audio-Generierung | 📋 pending | TASK-002 | 45min | 13 Audio-Files | [Details](tasks/TASK-003-audio-gen.md) |
-| **TASK-004** | Audio-Engine | 📋 pending | TASK-003 | 3h | JS Audio Logic | [Details](tasks/TASK-004-audio-engine.md) |
+| **TASK-004** | Audio-Engine (Platzhalter) | ✅ completed | None | 2h | JS Audio Logic | [Details](tasks/TASK-004-audio-engine.md) |
 
 </details>
 
@@ -167,6 +168,7 @@ Letzte Aktualisierung: 2026-02-13
 | 2026-02-13 | Bestehende CLAUDE.md erweitert | Workflow-Block injiziert statt Template-Neustart | Phase 1 |
 | 2026-02-13 | Phase 1.5 Polish vor GitHub Setup | UX-Verbesserungen direkt machbar, GitHub kann warten | Phase 1.5 |
 | 2026-02-13 | Atemtempo konfigurierbar (2-8s) | War hardcoded 3.6s, jetzt Slider im Config-Screen | Phase 1.5 |
+| 2026-02-13 | Audio-Engine mit Oszillator-Fallback | TASK-004 von TASK-003 entkoppelt, Platzhalter statt echte Files | Phase 2 |
 
 </details>
 
@@ -198,4 +200,4 @@ _Noch keine abgeschlossenen Phasen. Nach Phase-Completion: Content nach `90_DOCS
 
 ---
 
-*Last updated: 2026-02-13 (TASK-002 README.md completed)*
+*Last updated: 2026-02-13 (TASK-004 Audio-Engine completed)*

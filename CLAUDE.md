@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Wim Hof Breathwork App — a personal guided breathing meditation app for the Wim Hof Method. Target: Android PWA, parameterizable, with AI-generated voice guidance. No accounts, no cloud, purely local.
 
-**Current status:** Phase 1 (MVP) complete — both HTML and JSX files are the MVP. Phase 2 (Audio Integration) and Phase 3 (PWA/Deployment) pending.
+**Current status:** Phase 2 (Audio Integration) in progress — Audio Engine with oscillator placeholders implemented (TASK-004). Phase 3 (PWA/Deployment) pending.
 
 ## Architecture
 
@@ -40,6 +40,14 @@ Core flow: `CONFIG → COUNTDOWN (3s) → BREATHING → RETENTION → RECOVERY �
 - Fonts: DM Sans (UI), Space Mono (data/labels)
 - Animated breath circle with glow/main/inner rings
 
+### Audio Engine (Lines 292-406)
+
+- **Web Audio API** with `AudioContext` — initialized on user gesture (browser policy compliant)
+- **Fallback chain**: MP3 files from `audio/` → oscillator-based placeholder tones
+- **13 snippet types**: session_start/end, guide_01-03, motiv_01-04, breath_cue, recovery_end, round_done, ambient
+- **Ambient**: Looping MP3 or 110Hz sine drone oscillator
+- **Config**: Audio toggle (on/off) + volume slider (0-100%)
+
 ### Key Technical Decisions
 
 - **Wake Lock API** used to prevent screen timeout during sessions
@@ -47,6 +55,7 @@ Core flow: `CONFIG → COUNTDOWN (3s) → BREATHING → RETENTION → RECOVERY �
 - **`Date.now()`** for retention/recovery timers (wall-clock accuracy)
 - Timer intervals at 250ms for smooth UI updates without excessive CPU
 - Guidance text changes at breath milestones (halfway, last 2 breaths)
+- **Breath cue tracking** via `lastBreathPlayed` counter — plays once per cycle, not per frame
 
 ## Development
 
