@@ -1,0 +1,17 @@
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Audio assets (generated externally, add individually when ready)
+# audio/
+
+# Claude Code
+.claude/

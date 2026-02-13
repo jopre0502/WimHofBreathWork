@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Wim Hof Breathwork</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Space+Mono:wght@400;700&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    min-height: 100vh;
+    background: linear-gradient(170deg, #0a1628 0%, #0d2137 40%, #0a1a2e 100%);
+    color: #c8dce6;
+    font-family: 'DM Sans', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    overflow: hidden;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: center;
+    position: relative;
+  }
+
+  .screen { display: none; width: 100%; flex-direction: column; align-items: center; }
+  .screen.active { display: flex; animation: fadeIn 0.5s ease; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* --- Config --- */
+  .brand-sub { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase; color: rgba(127,219,218,0.5); margin-bottom: 8px; }
+  .brand-title { font-size: 28px; font-weight: 700; color: #e4f0f6; letter-spacing: -0.02em; margin-bottom: 48px; }
+
+  .slider-group { width: 100%; margin-bottom: 28px; }
+  .slider-header { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 14px; letter-spacing: 0.04em; text-transform: uppercase; color: rgba(180,210,220,0.7); }
+  .slider-val { color: #7fdbda; font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700; }
+  .slider-track { position: relative; height: 6px; border-radius: 3px; background: rgba(127,219,218,0.12); }
+  .slider-fill { position: absolute; top: 0; left: 0; bottom: 0; border-radius: 3px; background: linear-gradient(90deg, #7fdbda, #4fa8a7); transition: width 0.15s ease; }
+  .slider-track input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; margin: 0; }
+
+  .btn-start {
+    width: 100%; margin-top: 32px; padding: 18px 0;
+    background: linear-gradient(135deg, #7fdbda, #4fa8a7); color: #0a1628; border: none; border-radius: 12px;
+    font-size: 16px; font-weight: 700; font-family: 'DM Sans', sans-serif; letter-spacing: 0.06em; text-transform: uppercase;
+    cursor: pointer; box-shadow: 0 4px 24px rgba(127,219,218,0.2); transition: transform 0.15s ease;
+  }
+  .btn-start:active { transform: scale(0.97); }
+
+  /* --- Session --- */
+  .phase-label { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(180,210,220,0.45); margin-bottom: 8px; }
+  .round-label { font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.15em; color: rgba(127,219,218,0.4); margin-bottom: 40px; }
+
+  .circle-wrap { position: relative; width: 260px; height: 260px; display: flex; align-items: center; justify-content: center; margin-bottom: 32px; }
+  .circle-glow { position: absolute; width: 260px; height: 260px; border-radius: 50%; transition: transform 0.8s cubic-bezier(0.4,0,0.2,1), opacity 0.5s ease; }
+  .circle-main { position: absolute; width: 220px; height: 220px; border-radius: 50%; border: 2px solid rgba(127,219,218,0.4); transition: transform 0.8s cubic-bezier(0.4,0,0.2,1), background 0.5s ease, border-color 0.5s ease; }
+  .circle-inner { position: absolute; width: 160px; height: 160px; border-radius: 50%; border: 1px solid rgba(127,219,218,0.4); opacity: 0.4; transition: transform 0.8s cubic-bezier(0.4,0,0.2,1); }
+  .circle-content { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+
+  .center-big { font-family: 'Space Mono', monospace; font-size: 42px; font-weight: 700; color: #e4f0f6; }
+  .center-big.gold { color: #c8a050; }
+  .center-big.teal { color: #7fdbda; }
+  .center-big.countdown { font-size: 64px; color: #7fdbda; }
+  .center-sub { font-size: 13px; color: rgba(127,219,218,0.6); margin-top: 4px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .center-sub.gold { color: rgba(200,160,80,0.5); }
+
+  .guidance { min-height: 60px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 0 20px; }
+  .guidance p { font-size: 17px; font-weight: 500; color: rgba(228,240,246,0.85); line-height: 1.5; font-style: italic; transition: opacity 0.3s ease; }
+
+  .btn-letgo {
+    margin-top: 40px; padding: 20px 48px; min-width: 200px;
+    background: rgba(200,160,80,0.12); color: #c8a050; border: 1px solid rgba(200,160,80,0.3); border-radius: 16px;
+    font-size: 15px; font-weight: 700; font-family: 'DM Sans', sans-serif; letter-spacing: 0.08em; text-transform: uppercase;
+    cursor: pointer; transition: transform 0.15s ease;
+  }
+  .btn-letgo:active { transform: scale(0.96); }
+
+  .btn-abort {
+    position: fixed; top: 16px; right: 16px; background: none; border: none;
+    color: rgba(180,210,220,0.3); font-size: 13px; font-family: 'DM Sans', sans-serif; cursor: pointer; padding: 8px 12px;
+  }
+
+  /* --- Done --- */
+  .done-title { font-size: 24px; font-weight: 700; color: #e4f0f6; margin-bottom: 48px; }
+  .result-row { display: flex; justify-content: space-between; align-items: center; padding: 14px 0; border-bottom: 1px solid rgba(127,219,218,0.08); width: 100%; }
+  .result-label { font-size: 14px; color: rgba(180,210,220,0.6); }
+  .result-time { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: #7fdbda; }
+  .result-best { margin-top: 8px; padding-top: 18px; border-bottom: none; }
+  .result-best .result-label { color: rgba(180,210,220,0.4); }
+  .result-best .result-time { color: #e4f0f6; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- CONFIG SCREEN -->
+  <div id="screen-config" class="screen active">
+    <div class="brand-sub">Wim Hof Methode</div>
+    <div class="brand-title">Breathwork</div>
+
+    <div class="slider-group">
+      <div class="slider-header"><span>Runden</span><span class="slider-val" id="val-rounds">3</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-rounds"></div><input type="range" id="sl-rounds" min="1" max="6" value="3"></div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-header"><span>Atemzüge</span><span class="slider-val" id="val-breaths">30</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-breaths"></div><input type="range" id="sl-breaths" min="20" max="50" value="30"></div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-header"><span>Retention (Sek.)</span><span class="slider-val" id="val-retention">90s</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-retention"></div><input type="range" id="sl-retention" min="30" max="300" value="90"></div>
+    </div>
+    <div class="slider-group">
+      <div class="slider-header"><span>Recovery (Sek.)</span><span class="slider-val" id="val-recovery">15s</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-recovery"></div><input type="range" id="sl-recovery" min="10" max="30" value="15"></div>
+    </div>
+
+    <div class="slider-group">
+      <div class="slider-header"><span>Atemtempo (Sek.)</span><span class="slider-val" id="val-tempo">4s</span></div>
+      <div class="slider-track"><div class="slider-fill" id="fill-tempo"></div><input type="range" id="sl-tempo" min="2" max="8" value="4"></div>
+    </div>
+
+    <button class="btn-start" id="btn-start">Session starten</button>
+  </div>
+
+  <!-- SESSION SCREEN -->
+  <div id="screen-session" class="screen">
+    <div class="phase-label" id="phase-label"></div>
+    <div class="round-label" id="round-label"></div>
+
+    <div class="circle-wrap">
+      <div class="circle-glow" id="circle-glow"></div>
+      <div class="circle-main" id="circle-main"></div>
+      <div class="circle-inner" id="circle-inner"></div>
+      <div class="circle-content" id="circle-content"></div>
+    </div>
+
+    <div class="guidance"><p id="guidance-text"></p></div>
+
+    <div id="action-area"></div>
+    <button class="btn-abort" id="btn-abort">✕ Beenden</button>
+  </div>
+
+  <!-- DONE SCREEN -->
+  <div id="screen-done" class="screen">
+    <div class="brand-sub">Session beendet</div>
+    <div class="done-title">Gut gemacht.</div>
+    <div id="results-list" style="width:100%; margin-bottom: 48px;"></div>
+    <button class="btn-start" id="btn-restart">Neue Session</button>
+  </div>
+
+</div>
+
+<script>
+(function() {
+  // --- State ---
+  const config = { rounds: 3, breaths: 30, retentionMax: 90, recoveryDuration: 15, breathCycle: 4 };
+  let currentRound = 0;
+  let retentionTimes = [];
+  let animFrame = null;
+  let timerInterval = null;
+  let wakeLock = null;
+
+  // --- DOM ---
+  const $ = (id) => document.getElementById(id);
+  const screens = { config: $('screen-config'), session: $('screen-session'), done: $('screen-done') };
+
+  function showScreen(name) {
+    Object.values(screens).forEach(s => s.classList.remove('active'));
+    screens[name].classList.add('active');
+  }
+
+  // --- Sliders ---
+  const sliders = [
+    { id: 'rounds', key: 'rounds', suffix: '' },
+    { id: 'breaths', key: 'breaths', suffix: '' },
+    { id: 'retention', key: 'retentionMax', suffix: 's' },
+    { id: 'recovery', key: 'recoveryDuration', suffix: 's' },
+    { id: 'tempo', key: 'breathCycle', suffix: 's' },
+  ];
+
+  sliders.forEach(({ id, key, suffix }) => {
+    const sl = $('sl-' + id);
+    const val = $('val-' + id);
+    const fill = $('fill-' + id);
+
+    function update() {
+      const v = parseInt(sl.value);
+      config[key] = v;
+      val.textContent = v + suffix;
+      const pct = ((v - sl.min) / (sl.max - sl.min)) * 100;
+      fill.style.width = pct + '%';
+    }
+
+    sl.addEventListener('input', update);
+    update();
+  });
+
+  // --- Format ---
+  function fmt(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return m > 0 ? m + ':' + String(s).padStart(2, '0') : String(s);
+  }
+
+  // --- Circle ---
+  function setCircle(scale, glowColor, borderColor, bgColor) {
+    const glow = $('circle-glow');
+    const main = $('circle-main');
+    const inner = $('circle-inner');
+    glow.style.transform = 'scale(' + (scale * 1.3) + ')';
+    glow.style.background = 'radial-gradient(circle, ' + glowColor + ' 0%, transparent 70%)';
+    main.style.transform = 'scale(' + scale + ')';
+    main.style.borderColor = borderColor;
+    main.style.background = bgColor;
+    inner.style.transform = 'scale(' + (scale * 0.95) + ')';
+    inner.style.borderColor = borderColor;
+  }
+
+  function setCircleInstant() {
+    const glow = $('circle-glow');
+    const main = $('circle-main');
+    const inner = $('circle-inner');
+    [glow, main, inner].forEach(el => { el.style.transition = 'none'; });
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        [glow, main, inner].forEach(el => { el.style.transition = ''; });
+      });
+    });
+  }
+
+  function setContent(html) { $('circle-content').innerHTML = html; }
+  function setGuidance(text) { $('guidance-text').textContent = text; }
+  function setPhaseLabel(text) { $('phase-label').textContent = text; }
+  function setRoundLabel(r, total) { $('round-label').textContent = 'Runde ' + r + ' / ' + total; }
+
+  // --- Wake Lock ---
+  async function requestWake() {
+    try { if ('wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen'); } catch {}
+  }
+  function releaseWake() {
+    if (wakeLock) { wakeLock.release(); wakeLock = null; }
+  }
+
+  // --- Vibration ---
+  function vibrate(pattern) {
+    if ('vibrate' in navigator) navigator.vibrate(pattern);
+  }
+
+  // --- Fullscreen ---
+  function requestFullscreen() {
+    const el = document.documentElement;
+    const rfs = el.requestFullscreen || el.webkitRequestFullscreen;
+    if (rfs) rfs.call(el).catch(() => {});
+  }
+  function exitFullscreen() {
+    if (document.fullscreenElement || document.webkitFullscreenElement) {
+      (document.exitFullscreen || document.webkitExitFullscreen).call(document).catch(() => {});
+    }
+  }
+
+  // --- Easing ---
+  function easeInOutSine(t) {
+    return -(Math.cos(Math.PI * t) - 1) / 2;
+  }
+
+  // --- Session Flow ---
+  function startSession() {
+    currentRound = 1;
+    retentionTimes = [];
+    requestWake();
+    requestFullscreen();
+    showScreen('session');
+    $('btn-abort').style.display = 'block';
+    runCountdown();
+  }
+
+  function endSession() {
+    cancelAnimationFrame(animFrame);
+    clearInterval(timerInterval);
+    releaseWake();
+    exitFullscreen();
+    $('btn-abort').style.display = 'none';
+    showScreen('config');
+  }
+
+  // --- Countdown ---
+  function runCountdown() {
+    vibrate(100);
+    let count = 3;
+    $('action-area').innerHTML = '';
+    setPhaseLabel('Bereit machen');
+    setRoundLabel(currentRound, config.rounds);
+    setCircle(0.7, 'rgba(127,219,218,0.08)', 'rgba(127,219,218,0.3)', 'rgba(127,219,218,0.08)');
+    setContent('<span class="center-big countdown">' + count + '</span>');
+    setGuidance('');
+
+    timerInterval = setInterval(() => {
+      count--;
+      if (count <= 0) {
+        clearInterval(timerInterval);
+        runBreathing();
+        return;
+      }
+      setContent('<span class="center-big countdown">' + count + '</span>');
+    }, 1000);
+  }
+
+  // --- Breathing ---
+  function runBreathing() {
+    const CYCLE = config.breathCycle * 1000;
+    const total = config.breaths;
+    let start = performance.now();
+    let guidanceState = 0;
+
+    setPhaseLabel('Phase 1 · Atmen');
+    setGuidance('Atme tief ein… und lass los.');
+    $('action-area').innerHTML = '';
+
+    function animate() {
+      const elapsed = performance.now() - start;
+      const completed = Math.floor(elapsed / CYCLE);
+
+      if (completed >= total) {
+        cancelAnimationFrame(animFrame);
+        runRetention();
+        return;
+      }
+
+      const cyclePos = (elapsed % CYCLE) / CYCLE;
+      const inhaling = cyclePos <= 0.5;
+      const t = inhaling ? cyclePos / 0.5 : (cyclePos - 0.5) / 0.5;
+      const e = easeInOutSine(t);
+      const scale = inhaling ? 0.55 + e * 0.45 : 1.0 - e * 0.45;
+      const op = inhaling ? 0.4 + e * 0.5 : 0.9 - e * 0.5;
+
+      setCircleInstant();
+      setCircle(
+        scale,
+        'rgba(127,219,218,' + (0.05 + op * 0.1) + ')',
+        'rgba(127,219,218,' + (0.3 + op * 0.4) + ')',
+        'rgba(127,219,218,' + (0.05 + op * 0.15) + ')'
+      );
+
+      const label = inhaling ? 'Einatmen' : 'Ausatmen';
+      setContent('<span class="center-big teal">' + (completed + 1) + '</span><span class="center-sub">' + label + '</span>');
+
+      if (guidanceState === 0 && completed >= Math.floor(total / 2)) {
+        guidanceState = 1;
+        setGuidance('Weiter. Tief ein… locker aus.');
+      }
+      if (guidanceState === 1 && completed >= total - 2) {
+        guidanceState = 2;
+        setGuidance('Letzter Atemzug. Atme aus… und halte.');
+      }
+
+      animFrame = requestAnimationFrame(animate);
+    }
+
+    animFrame = requestAnimationFrame(animate);
+  }
+
+  // --- Retention ---
+  function runRetention() {
+    vibrate([100, 50, 200]);
+    let startTime = Date.now();
+    let motivIdx = 0;
+    const motivations = ['Entspanne deinen Körper.', 'Du machst das gut.', 'Bleib ruhig. Lass los.', 'Gib nicht auf.'];
+
+    setPhaseLabel('Phase 2 · Halten');
+    setGuidance('Halte. Entspanne deinen Körper.');
+    setCircle(0.5, 'rgba(200,160,80,0.06)', 'rgba(200,160,80,0.3)', 'rgba(200,160,80,0.06)');
+
+    $('action-area').innerHTML = '<button class="btn-letgo" id="btn-letgo">Loslassen</button>';
+    $('btn-letgo').addEventListener('click', abortRetention);
+
+    function abortRetention() {
+      vibrate(150);
+      clearInterval(timerInterval);
+      const secs = Math.floor((Date.now() - startTime) / 1000);
+      retentionTimes.push(secs);
+      setGuidance('Okay. Atme tief ein.');
+      $('action-area').innerHTML = '';
+      setTimeout(runRecovery, 1200);
+    }
+
+    timerInterval = setInterval(() => {
+      const secs = Math.floor((Date.now() - startTime) / 1000);
+      setContent('<span class="center-big gold">' + fmt(secs) + '</span><span class="center-sub gold">/ ' + fmt(config.retentionMax) + '</span>');
+
+      // Pulse border
+      const pulse = 0.3 + Math.sin(Date.now() / 1500) * 0.15;
+      $('circle-main').style.borderColor = 'rgba(200,160,80,' + pulse + ')';
+      $('circle-inner').style.borderColor = 'rgba(200,160,80,' + pulse + ')';
+
+      // Motivation
+      if (secs > 10 && secs % 20 === 0 && motivIdx < motivations.length) {
+        setGuidance(motivations[motivIdx]);
+        motivIdx++;
+      }
+
+      if (secs >= config.retentionMax) {
+        clearInterval(timerInterval);
+        retentionTimes.push(secs);
+        setGuidance('Zeit. Atme jetzt tief ein.');
+        $('action-area').innerHTML = '';
+        setTimeout(runRecovery, 1500);
+      }
+    }, 250);
+  }
+
+  // --- Recovery ---
+  function runRecovery() {
+    vibrate(200);
+    const duration = config.recoveryDuration;
+    let startTime = Date.now();
+
+    setPhaseLabel('Phase 3 · Recovery');
+    setGuidance('Tief einatmen… und halten.');
+    setCircle(0.95, 'rgba(127,219,218,0.1)', 'rgba(127,219,218,0.6)', 'rgba(127,219,218,0.12)');
+    $('action-area').innerHTML = '';
+
+    timerInterval = setInterval(() => {
+      const elapsed = Math.floor((Date.now() - startTime) / 1000);
+      const remaining = Math.max(0, duration - elapsed);
+      setContent('<span class="center-big teal">' + fmt(remaining) + '</span><span class="center-sub">Recovery</span>');
+
+      if (elapsed >= duration) {
+        clearInterval(timerInterval);
+        setGuidance('Langsam ausatmen.');
+
+        setTimeout(() => {
+          if (currentRound < config.rounds) {
+            setGuidance('Gut gemacht. Nächste Runde.');
+            setTimeout(() => {
+              currentRound++;
+              runCountdown();
+            }, 2500);
+          } else {
+            showDone();
+          }
+        }, 1500);
+      }
+    }, 250);
+  }
+
+  // --- Done ---
+  function showDone() {
+    vibrate([100, 50, 100, 50, 300]);
+    releaseWake();
+    exitFullscreen();
+    showScreen('done');
+
+    let html = '';
+    retentionTimes.forEach((t, i) => {
+      html += '<div class="result-row"><span class="result-label">Runde ' + (i + 1) + '</span><span class="result-time">' + fmt(t) + '</span></div>';
+    });
+
+    if (retentionTimes.length > 1) {
+      const best = Math.max(...retentionTimes);
+      html += '<div class="result-row result-best"><span class="result-label">Längste</span><span class="result-time" style="color:#e4f0f6">' + fmt(best) + '</span></div>';
+    }
+
+    $('results-list').innerHTML = html;
+  }
+
+  // --- Events ---
+  $('btn-start').addEventListener('click', startSession);
+  $('btn-abort').addEventListener('click', endSession);
+  $('btn-restart').addEventListener('click', () => showScreen('config'));
+
+})();
+</script>
+
+</body>
+</html>
