@@ -55,10 +55,54 @@ WimHofBreathWork/
 ├── wim-hof-app.jsx               # React prototype (Claude Artifact)
 ├── wim-hof-breathwork-konzept.md  # Full concept & roadmap
 ├── CLAUDE.md                      # Architecture guide
+├── audio/                         # Optional MP3 audio snippets
+│   ├── session_start.mp3
+│   ├── session_end.mp3
+│   ├── breath_cue.mp3
+│   ├── round_done.mp3
+│   ├── recovery_end.mp3
+│   ├── guide_01.mp3 … guide_03.mp3
+│   ├── motiv_01.mp3 … motiv_04.mp3
+│   └── ambient.mp3
 └── 90_DOCS/                       # Project documentation
     ├── PROJEKT.md                 # Task tracking
     └── tasks/                     # Task details & artifacts
 ```
+
+## Audio
+
+The app uses a **hybrid audio engine** (Web Audio API): MP3 files with synthesis fallback.
+
+### How it works
+
+1. On session start, the engine tries to load each MP3 from `audio/<name>.mp3`
+2. If an MP3 exists, it plays the file
+3. If not, it falls back to a Web Audio synthesis (singing bowls, FM chimes, shaped tones)
+
+This means **all MP3 files are optional** — the app works without any audio files present.
+
+### Snippet naming (fixed convention)
+
+MP3 files must use these exact names in the `audio/` directory:
+
+| File | Purpose | Synthesis fallback |
+|------|---------|-------------------|
+| `session_start.mp3` | Played at session begin | Singing bowl (220 Hz) |
+| `session_end.mp3` | Played at session end | Singing bowl (196 Hz) |
+| `guide_01.mp3` | Voice guidance: breathing intro | FM chime |
+| `guide_02.mp3` | Voice guidance: retention intro | FM chime |
+| `guide_03.mp3` | Voice guidance: recovery intro | FM chime |
+| `motiv_01.mp3` … `motiv_04.mp3` | Motivation messages during retention | Warm tone |
+| `breath_cue.mp3` | Short cue per breath cycle | Soft breath cue tone |
+| `recovery_end.mp3` | Recovery phase finished | Singing bowl (262 Hz) |
+| `round_done.mp3` | Round completed | FM chime |
+| `ambient.mp3` | Looping background ambient | Synthesized ocean drone |
+
+### Adding your own audio
+
+Drop MP3 files into `audio/` with the names above — no code changes needed. You can replace individual snippets selectively; missing files simply use the synthesis fallback.
+
+Voice guidance and motivation snippets (`guide_*`, `motiv_*`) are the primary candidates for MP3 replacement, since speech cannot be synthesized. Sound effects (bowls, chimes, cues) already sound good via synthesis.
 
 ## Roadmap
 
