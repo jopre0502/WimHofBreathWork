@@ -26,6 +26,7 @@ Letzte Aktualisierung: 2026-02-13
 - [x] **TASK-002:** README.md ✅
 - [x] **TASK-004:** Audio-Engine mit Platzhalter-Sounds ✅
 - [ ] **TASK-003:** Audio-Snippets generieren (manueller Schritt)
+- [ ] **TASK-006:** Frontend Redesign "Watery/Icy" (visuelles Overhaul)
 
 **Entscheidungspunkte:**
 - Repo Public/Private: Public (für GitHub Pages Deployment)
@@ -78,6 +79,16 @@ Letzte Aktualisierung: 2026-02-13
 | **TASK-004** | Audio-Engine (Platzhalter) | ✅ completed | None | 2h | JS Audio Logic | [Details](tasks/TASK-004-audio-engine.md) |
 
 </details>
+
+---
+
+## 🎨 Phase 2.5: Visual Redesign (GEPLANT)
+
+**Ziel:** Visuelles Redesign der App hin zu "Watery / Icy" Aesthetik — Eisbaden-Stimmung, meditativ, nicht bedrohlich.
+
+| UUID | Task | Status | Dependencies | Effort | Deliverable | Task-File |
+|------|------|--------|--------------|--------|-------------|-----------|
+| **TASK-006** | Frontend Redesign "Watery/Icy" | 📋 pending | None | 3-5h | CSS/Visual Overhaul | [Details](tasks/TASK-006-frontend-watery-icy.md) |
 
 ---
 
@@ -200,4 +211,4 @@ _Noch keine abgeschlossenen Phasen. Nach Phase-Completion: Content nach `90_DOCS
 
 ---
 
-*Last updated: 2026-02-13 (TASK-004 Audio-Engine completed)*
+*Last updated: 2026-02-22 (TASK-006 Frontend Redesign erstellt)*
