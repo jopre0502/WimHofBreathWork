@@ -26,16 +26,17 @@ Das gesamte visuelle Erscheinungsbild der App ueberarbeiten hin zu einem **"Wate
 |-------|---------|-----------|--------------|
 | **Hintergrund** | `#0a1628` → `#0d2137` | Tiefes Dunkelblau mit subtilen Unterwasser-Gradienten | Wie tiefer See, nicht wie Nachthimmel |
 | **Primaer-Akzent** | `#7fdbda` (Teal) | Eisblau / helles Cyan `~#a0e8f0` bis `#d0f4ff` | Klar, leuchtend, wie Licht unter Eis |
-| **Sekundaer-Akzent** | `#c8a050` (Gold) | Behalten oder leicht kuehler (Silber/Weiss?) | Gold koennte als Waerme-Kontrast zur Kaelte funktionieren — oder durch kaltes Silber/Weiss ersetzen |
+| **Sekundaer-Akzent** | `#c8a050` (Gold) | Gold bleibt — als "Sonnenlicht durch Eis" | Nicht warmes Gold, sondern Licht das durch Eisdecke bricht. Warm-Kalt-Kontrast bewusst gewollt |
 | **Text** | `#c8dce6` / `#e4f0f6` | Leicht blaeulicher, eisiger Weisston | Wie Reif auf Glas |
 | **Subtile Akzente** | — | Frost-Weiss, transluzentes Blau | Fuer Glasmorphismus-Effekte |
 
 ### Visuelle Effekte & Techniken
 
-#### 1. Glasmorphismus / Frosted Glass
+#### 1. Glasmorphismus / Frosted Glass (bewusst sichtbar)
 - UI-Panels mit `backdrop-filter: blur()` + semi-transparentem Hintergrund
 - Slider-Bereiche, Config-Card, Done-Screen als "Eisscheiben"
 - Subtile weisse Raender wie Reif-Kanten
+- **Nicht dezent versteckt** — als bewusstes Gestaltungselement, wie Blick durch Eis/Wasser
 
 #### 2. Breath-Circle Redesign
 - **Einatmen:** Circle expandiert mit wellenartiger Bewegung, wie Wasser das sich ausbreitet
@@ -43,19 +44,21 @@ Das gesamte visuelle Erscheinungsbild der App ueberarbeiten hin zu einem **"Wate
 - Ueberlegung: Concentrische Wellenringe (Ripple-Effekt) statt hartem Scale
 - Glow-Effekt: Kuehles Eisblau, pulsierend, wie Licht unter Wasseroberfläche
 
-#### 3. Hintergrund-Atmosphaere
-- Subtile, langsame Partikel (koennen CSS-only sein):
-  - Kleine Blasen die aufsteigen (wie unter Wasser)
-  - Oder sanft fallende Eiskristalle / Schneeflocken
-- Unterwasser-Lichteffekte: Sanfte Caustics / Lichtbrechungsmuster (CSS radial-gradient Animation)
+#### 3. Hintergrund-Atmosphaere: Unterwasser-Welt
+- **Leitmetapher:** Man ist unter Wasser und haelt die Luft an
+- Unterwasser-Lichteffekte: Caustics / Lichtbrechungsmuster (CSS radial-gradient Animation)
+  - Wie Sonnenlicht das durch die Wasseroberfläche bricht
+  - Langsam wandernde Lichtflecken
+- Aufsteigende Luftblasen (CSS-Partikel, wenige, langsam)
 - Gradient-Shifts zwischen den Phasen (tieferes Blau → helleres Eis)
+- Kein Schnee, keine abstrakten Partikel — alles soll "Wasser" sagen
 
 #### 4. Phase-spezifische Variationen
 | Phase | Visuelle Stimmung | Idee |
 |-------|-------------------|------|
 | **CONFIG** | Ruhiges Wasser, klar | Neutrale Eisblau-Palette |
 | **BREATHING** | Rhythmisches Wasser | Wellenanimation synchron mit Atem |
-| **RETENTION** | Unter Eis / Stille | Tieferes Blau, Frost-Overlay, alles wird still |
+| **RETENTION** | Unter Wasser / Luft anhalten | Tieferes Blau, Caustics intensiver, Sonnenlicht-Gold durch die Eisdecke |
 | **RECOVERY** | Auftauchen / Waerme | Sanft waermere Toene mischen sich ein |
 | **SESSION_DONE** | Klarheit nach Kaelte | Hellstes Blau, "frisch" Gefuehl |
 
@@ -122,12 +125,18 @@ Das gesamte visuelle Erscheinungsbild der App ueberarbeiten hin zu einem **"Wate
 - **Nordic Spa Design:** Minimalistisch, natuerlich, beruhigend trotz Kaelte
 - **Wim Hof Branding:** Blau/Cyan-Toene, Natur, Stärke + Ruhe
 
-## Offene Fragen (vor Implementation zu klaeren)
+## Design-Entscheidungen (geklaert)
 
-1. **Gold behalten oder ersetzen?** Retention-Phase aktuell in Gold — soll das bleiben als Waerme-Kontrast, oder durch Silber/Frost-Weiss ersetzt werden?
-2. **Partikel ja/nein?** CSS-Partikel (Blasen/Schneeflocken) koennen ablenken — vielleicht nur im Config-Screen, nicht waehrend Session?
-3. **Wie stark Glasmorphismus?** Dezent (nur Raender + leichter Blur) oder dominant (alle Panels)?
+1. **Gold → Sonnenlicht durch Eis** ✅
+   Gold bleibt in der Retention-Phase, aber interpretiert als Sonnenlicht das durch Eis/Wasser bricht. Nicht "warmes Gold" sondern "Licht das durch die Eisdecke dringt". Verbindet Waerme (Sonne) mit Kaelte (Eis) — perfekt fuer den Retention-Moment.
+
+2. **Partikel: Unterwasser-Reflexionen** ✅
+   Keine Schneeflocken oder abstrakte Partikel. Stattdessen: **Wasserreflexionen / Caustics** — wie wenn man unter Wasser ist und Luft anhaelt. Lichtbrechungsmuster an der Oberfläche, aufsteigende Luftblasen. Das passt perfekt zur Retention-Phase (Luft anhalten) und zur Gesamt-Metapher.
+
+3. **Glasmorphismus: Bewusst wahrnehmbar** ✅
+   Nicht versteckt-dezent, sondern als bewusstes Gestaltungselement. Panels sollen sich anfuehlen wie Blick durch Eis oder Wasser. Der Blur-Effekt darf praesent sein und zum visuellen Erlebnis beitragen.
 
 ## Audit Trail
 
 - 2026-02-22: Task erstellt — Design-Vision und Acceptance Criteria definiert
+- 2026-02-22: Offene Fragen geklaert — Gold als Sonnenlicht-durch-Eis, Unterwasser-Reflexionen statt abstrakte Partikel, Glasmorphismus bewusst sichtbar
