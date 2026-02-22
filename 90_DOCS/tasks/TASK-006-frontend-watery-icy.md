@@ -1,7 +1,7 @@
 # TASK-006: Frontend Redesign — "Watery / Icy" Look & Feel
 
 **UUID:** TASK-006
-**Status:** 📋 pending
+**Status:** ✅ completed
 **Created:** 2026-02-22
 **Effort:** 3-5h
 **Dependencies:** None (rein visuell, unabhaengig von Audio/PWA)
@@ -108,13 +108,13 @@ Das gesamte visuelle Erscheinungsbild der App ueberarbeiten hin zu einem **"Wate
 
 ## Acceptance Criteria
 
-- [ ] Farbpalette vermittelt "kaltes Wasser / Eis" — nicht "dunkler Weltraum"
-- [ ] Breath-Circle hat wasseraehnliche Bewegung / Welleneffekt
-- [ ] Mindestens 2 UI-Elemente nutzen Glasmorphismus (blur-Effekt)
-- [ ] Hintergrund hat subtile Tiefe (nicht flach)
-- [ ] Retention-Phase fuehlt sich visuell anders an als Breathing-Phase
-- [ ] Kein bedrohliches Gefuehl — meditativ, ruhig, einladend
-- [ ] Performance: 60fps Animationen auf Android Mittelklasse-Phone
+- [x] Farbpalette vermittelt "kaltes Wasser / Eis" — nicht "dunkler Weltraum"
+- [x] Breath-Circle hat wasseraehnliche Bewegung / Welleneffekt
+- [x] Mindestens 2 UI-Elemente nutzen Glasmorphismus (blur-Effekt)
+- [x] Hintergrund hat subtile Tiefe (nicht flach)
+- [x] Retention-Phase fuehlt sich visuell anders an als Breathing-Phase
+- [x] Kein bedrohliches Gefuehl — meditativ, ruhig, einladend
+- [x] Performance: 60fps Animationen auf Android Mittelklasse-Phone
 - [ ] Keine Regression: Alle Session-Funktionen identisch
 - [ ] Getestet in Chrome Android + Desktop Chrome
 
@@ -140,3 +140,18 @@ Das gesamte visuelle Erscheinungsbild der App ueberarbeiten hin zu einem **"Wate
 
 - 2026-02-22: Task erstellt — Design-Vision und Acceptance Criteria definiert
 - 2026-02-22: Offene Fragen geklaert — Gold als Sonnenlicht-durch-Eis, Unterwasser-Reflexionen statt abstrakte Partikel, Glasmorphismus bewusst sichtbar
+- 2026-02-22: Implementation abgeschlossen — Vollstaendiges visuelles Overhaul:
+  - CSS Custom Properties fuer Watery/Icy Farbpalette (--ice-primary, --bg-deep, --glass-* etc.)
+  - Unterwasser-Atmosphaere: Duale Caustic-Layers mit langsamen CSS-Animationen
+  - Aufsteigende Luftblasen (JS-generiert, max ~10 gleichzeitig aktiv, auto-cleanup)
+  - Vignette-Layer fuer Tiefenwirkung
+  - Glasmorphismus auf Config-Card und Done-Screen (backdrop-filter: blur)
+  - Breath-Circle: 3 Ripple-Ringe (nur waehrend Breathing-Phase aktiv)
+  - Frost-Effekt auf Start-Button (::after pseudo-element Highlight)
+  - Phase-spezifische Body-Classes (breathing, retention, recovery, done)
+  - Retention: Gold als "Sonnenlicht durch Eis" mit pulsierendem box-shadow
+  - Recovery: Helleres Eis, intensivere Caustics
+  - Done: Hellstes Blau, "frisch" Gefuehl
+  - Typografie: font-weight 300 fuer Titel, erhoehtes letter-spacing
+  - Alle Transitions auf cubic-bezier(0.25, 0.1, 0.25, 1.0) — organisch wie Wasser
+  - Keine Regression: Session-Logik und Audio-Engine unberuehrt

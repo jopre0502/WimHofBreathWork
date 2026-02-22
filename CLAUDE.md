@@ -32,13 +32,19 @@ Core flow: `CONFIG → COUNTDOWN (3s) → BREATHING → RETENTION → RECOVERY �
 | **RECOVERY** | Countdown timer | Teal color scheme, auto-transitions to next round or done |
 | **SESSION_DONE** | Summary screen with retention times per round | Shows longest retention if >1 round |
 
-### Design System
+### Design System — "Watery / Icy" Theme (TASK-006)
 
-- Dark background: `#0a1628` → `#0d2137`
-- Teal accent (breathing/recovery): `#7fdbda` / `#4fa8a7`
-- Gold accent (retention): `#c8a050`
-- Fonts: DM Sans (UI), Space Mono (data/labels)
-- Animated breath circle with glow/main/inner rings
+- **Metaphor:** Underwater / ice bathing — meditative, clear, challenging but not threatening
+- **CSS Custom Properties** in `:root` — all colors centralized via `--ice-*`, `--bg-*`, `--glass-*`, `--gold-*` vars
+- Deep blue background: `--bg-deep: #051525` → `--bg-mid: #082240` → `--bg-surface: #0a2a4a`
+- Ice-blue accent (breathing/recovery): `--ice-primary: #8fd4e6` / `--ice-light: #b8e8f5`
+- Gold accent (retention): `--gold-light: #d4a84b` — interpreted as "sunlight through ice"
+- Fonts: DM Sans (UI, weight 300-700), Space Mono (data/labels)
+- **Glassmorphism** on Config card + Done screen: `backdrop-filter: blur(16px)` + frosted borders
+- **Underwater atmosphere** layer: dual caustic light animations, rising bubble particles (JS-generated), vignette
+- **Breath circle:** glow/main/inner rings + 3 ripple rings (active during breathing phase only)
+- **Phase-specific body classes:** `phase-breathing`, `phase-retention`, `phase-recovery`, `phase-done`
+- **Transitions:** All use `cubic-bezier(0.25, 0.1, 0.25, 1.0)` — organic, water-like
 
 ### Audio Engine (Lines 292-406)
 
