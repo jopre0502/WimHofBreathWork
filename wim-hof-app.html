@@ -289,12 +289,13 @@
     return -(Math.cos(Math.PI * t) - 1) / 2;
   }
 
-  // --- Audio Engine ---
+  // --- Audio Engine (Hybrid: MP3 → Advanced Synthesis Fallback) ---
   const audio = {
     ctx: null,
     bufferCache: new Map(),
     ambientSource: null,
     ambientGain: null,
+    ambientNodes: [],
 
     SNIPPETS: [
       'session_start', 'session_end', 'guide_01', 'guide_02', 'guide_03',
@@ -302,19 +303,20 @@
       'breath_cue', 'recovery_end', 'round_done', 'ambient'
     ],
 
-    FALLBACK: {
-      session_start: { freq: 440, dur: 0.6, type: 'sine' },
-      session_end:   { freq: 440, dur: 0.6, type: 'sine' },
-      guide_01:      { freq: 330, dur: 0.4, type: 'sine' },
-      guide_02:      { freq: 330, dur: 0.4, type: 'sine' },
-      guide_03:      { freq: 330, dur: 0.4, type: 'sine' },
-      motiv_01:      { freq: 520, dur: 0.3, type: 'sine' },
-      motiv_02:      { freq: 520, dur: 0.3, type: 'sine' },
-      motiv_03:      { freq: 520, dur: 0.3, type: 'sine' },
-      motiv_04:      { freq: 520, dur: 0.3, type: 'sine' },
-      breath_cue:    { freq: 880, dur: 0.08, type: 'sine' },
-      recovery_end:  { freq: 440, dur: 0.5, type: 'sine' },
-      round_done:    { freq: 440, dur: 0.5, type: 'sine' },
+    // Synthesis config: method + parameters per snippet
+    SYNTH: {
+      session_start: { method: 'singingBowl', freq: 220, dur: 4.0 },
+      session_end:   { method: 'singingBowl', freq: 196, dur: 5.0 },
+      guide_01:      { method: 'chime', freq: 880, dur: 2.0 },
+      guide_02:      { method: 'chime', freq: 784, dur: 2.0 },
+      guide_03:      { method: 'chime', freq: 659, dur: 2.5 },
+      motiv_01:      { method: 'warmTone', freq: 330, dur: 1.5 },
+      motiv_02:      { method: 'warmTone', freq: 370, dur: 1.5 },
+      motiv_03:      { method: 'warmTone', freq: 392, dur: 1.5 },
+      motiv_04:      { method: 'warmTone', freq: 440, dur: 1.5 },
+      breath_cue:    { method: 'breathCue', dur: 0.15 },
+      recovery_end:  { method: 'singingBowl', freq: 262, dur: 3.5 },
+      round_done:    { method: 'chime', freq: 740, dur: 2.5 },
     },
 
     init() {
@@ -329,7 +331,7 @@
           if (!res.ok) continue;
           const buf = await res.arrayBuffer();
           this.bufferCache.set(name, await this.ctx.decodeAudioData(buf));
-        } catch (e) { /* fallback tone used */ }
+        } catch (e) { /* synthesis fallback used */ }
       }
     },
 
@@ -346,22 +348,123 @@
         src.start();
         return;
       }
-      const fb = this.FALLBACK[name];
-      if (fb) this.playTone(fb.freq, fb.dur, fb.type);
+      const s = this.SYNTH[name];
+      if (!s) return;
+      switch (s.method) {
+        case 'singingBowl': this.playSingingBowl(s.freq, s.dur, vol); break;
+        case 'chime':       this.playChime(s.freq, s.dur, vol); break;
+        case 'warmTone':    this.playWarmTone(s.freq, s.dur, vol); break;
+        case 'breathCue':   this.playBreathCue(s.dur, vol); break;
+      }
     },
 
-    playTone(freq, dur, type) {
-      if (!this.ctx) return;
-      const vol = config.audioVolume / 100;
+    // Tibetan singing bowl: layered inharmonic partials with beating
+    playSingingBowl(freq, dur, vol) {
+      const t = this.ctx.currentTime;
+      const partials = [
+        { ratio: 1.0,  amp: 1.0,  decay: dur },
+        { ratio: 2.71, amp: 0.35, decay: dur * 0.75 },
+        { ratio: 4.58, amp: 0.15, decay: dur * 0.55 },
+        { ratio: 6.17, amp: 0.08, decay: dur * 0.4 },
+      ];
+      partials.forEach(p => {
+        const f = freq * p.ratio;
+        const a = vol * 0.25 * p.amp;
+        // Main partial
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.value = f;
+        gain.gain.setValueAtTime(a, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + p.decay);
+        osc.connect(gain).connect(this.ctx.destination);
+        osc.start(t);
+        osc.stop(t + p.decay + 0.05);
+        // Beating pair (detuned ~0.8Hz)
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'sine';
+        osc2.frequency.value = f + 0.8;
+        gain2.gain.setValueAtTime(a * 0.5, t);
+        gain2.gain.exponentialRampToValueAtTime(0.001, t + p.decay);
+        osc2.connect(gain2).connect(this.ctx.destination);
+        osc2.start(t);
+        osc2.stop(t + p.decay + 0.05);
+      });
+    },
+
+    // FM synthesis bell/chime: carrier + modulator at inharmonic ratio
+    playChime(freq, dur, vol) {
+      const t = this.ctx.currentTime;
+      // Modulator (inharmonic ratio → metallic timbre)
+      const mod = this.ctx.createOscillator();
+      const modGain = this.ctx.createGain();
+      mod.type = 'sine';
+      mod.frequency.value = freq * 3.5;
+      modGain.gain.setValueAtTime(freq * 0.7, t);
+      modGain.gain.exponentialRampToValueAtTime(1, t + dur);
+      // Carrier
+      const carrier = this.ctx.createOscillator();
+      const cGain = this.ctx.createGain();
+      carrier.type = 'sine';
+      carrier.frequency.value = freq;
+      cGain.gain.setValueAtTime(vol * 0.3, t);
+      cGain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      // FM routing: modulator → carrier.frequency
+      mod.connect(modGain).connect(carrier.frequency);
+      carrier.connect(cGain).connect(this.ctx.destination);
+      mod.start(t);
+      carrier.start(t);
+      mod.stop(t + dur + 0.05);
+      carrier.stop(t + dur + 0.05);
+    },
+
+    // Warm triangle wave with gentle attack + octave shimmer
+    playWarmTone(freq, dur, vol) {
+      const t = this.ctx.currentTime;
+      // Root (triangle = warmer harmonics than sine)
       const osc = this.ctx.createOscillator();
       const gain = this.ctx.createGain();
-      osc.type = type || 'sine';
+      osc.type = 'triangle';
       osc.frequency.value = freq;
-      gain.gain.value = vol * 0.5;
-      gain.gain.setTargetAtTime(0, this.ctx.currentTime + dur * 0.7, dur * 0.1);
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.linearRampToValueAtTime(vol * 0.25, t + 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
       osc.connect(gain).connect(this.ctx.destination);
-      osc.start();
-      osc.stop(this.ctx.currentTime + dur);
+      osc.start(t);
+      osc.stop(t + dur + 0.05);
+      // Octave shimmer (sine, quieter, shorter decay)
+      const osc2 = this.ctx.createOscillator();
+      const gain2 = this.ctx.createGain();
+      osc2.type = 'sine';
+      osc2.frequency.value = freq * 2;
+      gain2.gain.setValueAtTime(0.001, t);
+      gain2.gain.linearRampToValueAtTime(vol * 0.06, t + 0.08);
+      gain2.gain.exponentialRampToValueAtTime(0.001, t + dur * 0.6);
+      osc2.connect(gain2).connect(this.ctx.destination);
+      osc2.start(t);
+      osc2.stop(t + dur * 0.6 + 0.05);
+    },
+
+    // Filtered noise burst: soft "tsh" instead of harsh beep
+    playBreathCue(dur, vol) {
+      const ctx = this.ctx;
+      const t = ctx.currentTime;
+      const len = Math.ceil(ctx.sampleRate * dur);
+      const noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+      const data = noiseBuf.getChannelData(0);
+      for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuf;
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 2500;
+      filter.Q.value = 1.2;
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(vol * 0.2, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + dur);
+      src.connect(filter).connect(gain).connect(ctx.destination);
+      src.start(t);
     },
 
     startAmbient() {
@@ -378,13 +481,37 @@
         this.ambientSource.start();
         return;
       }
-      this.ambientSource = this.ctx.createOscillator();
-      this.ambientGain = this.ctx.createGain();
-      this.ambientSource.type = 'sine';
-      this.ambientSource.frequency.value = 110;
-      this.ambientGain.gain.value = vol * 0.06;
-      this.ambientSource.connect(this.ambientGain).connect(this.ctx.destination);
-      this.ambientSource.start();
+      // Ocean-like ambient: filtered noise with LFO wave rhythm
+      const ctx = this.ctx;
+      const bufSize = ctx.sampleRate * 4;
+      const noiseBuf = ctx.createBuffer(1, bufSize, ctx.sampleRate);
+      const data = noiseBuf.getChannelData(0);
+      for (let i = 0; i < bufSize; i++) data[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource();
+      src.buffer = noiseBuf;
+      src.loop = true;
+      // Low-pass filter for deep ocean character
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'lowpass';
+      filter.frequency.value = 400;
+      filter.Q.value = 0.7;
+      // LFO for wave rhythm (~7s cycle)
+      const lfo = ctx.createOscillator();
+      const lfoGain = ctx.createGain();
+      lfo.type = 'sine';
+      lfo.frequency.value = 0.14;
+      lfoGain.gain.value = vol * 0.04;
+      // Master gain
+      const masterGain = ctx.createGain();
+      masterGain.gain.value = vol * 0.08;
+      // Routing
+      lfo.connect(lfoGain).connect(masterGain.gain);
+      src.connect(filter).connect(masterGain).connect(ctx.destination);
+      src.start();
+      lfo.start();
+      this.ambientSource = src;
+      this.ambientGain = masterGain;
+      this.ambientNodes = [src, lfo];
     },
 
     stopAmbient() {
@@ -392,10 +519,13 @@
       if (this.ambientGain) {
         this.ambientGain.gain.setTargetAtTime(0, this.ctx.currentTime, 0.3);
       }
-      const src = this.ambientSource;
-      setTimeout(() => { try { src.stop(); } catch(e) {} }, 500);
+      const nodes = [this.ambientSource, ...this.ambientNodes];
+      setTimeout(() => {
+        nodes.forEach(n => { try { n.stop(); } catch(e) {} });
+      }, 500);
       this.ambientSource = null;
       this.ambientGain = null;
+      this.ambientNodes = [];
     },
 
     stopAll() {
