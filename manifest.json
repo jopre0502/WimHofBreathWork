@@ -1,8 +1,10 @@
 {
+  "id": "/wim-hof-app",
   "name": "Wim Hof Breathwork",
   "short_name": "Breathwork",
   "description": "Geführte Wim Hof Atemübung — offline, lokal, ohne Account.",
   "start_url": "./wim-hof-app.html",
+  "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#051525",
@@ -12,6 +14,16 @@
     { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
     { "src": "icons/icon-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
   ],
+  "screenshots": [
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Wim Hof Breathwork — Startscreen"
+    }
+  ],
   "categories": ["health", "lifestyle"],
-  "lang": "de"
+  "lang": "de",
+  "dir": "ltr"
 }

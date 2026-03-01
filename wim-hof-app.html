@@ -256,6 +256,71 @@
   }
   .btn-start:active { transform: scale(0.97); box-shadow: 0 2px 12px rgba(143,212,230,0.15); }
 
+  /* --- Install Banner --- */
+  .install-banner {
+    width: 100%;
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border: 1px solid var(--glass-border);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    animation: installSlideIn 0.4s var(--transition-water);
+  }
+  @keyframes installSlideIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .install-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .install-text strong {
+    font-size: 14px;
+    color: var(--ice-light);
+    font-weight: 600;
+  }
+  .install-text span {
+    font-size: 12px;
+    color: var(--frost-dim);
+  }
+  .install-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .install-btn {
+    flex: 1;
+    padding: 10px 0;
+    background: linear-gradient(135deg, var(--ice-primary), #5eb8cc);
+    color: var(--bg-deep);
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .install-btn:active { transform: scale(0.97); }
+  .install-dismiss {
+    padding: 10px 16px;
+    background: transparent;
+    color: var(--frost-dim);
+    border: 1px solid rgba(143,212,230,0.15);
+    border-radius: 10px;
+    font-size: 13px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer;
+    transition: color 0.15s ease;
+  }
+  .install-dismiss:hover { color: var(--frost-white); }
+
   /* --- Session --- */
   .phase-label {
     font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 0.25em;
@@ -489,6 +554,17 @@
     </div>
 
     <button class="btn-start" id="btn-start">Session starten</button>
+
+    <div class="install-banner" id="install-banner" style="display:none;">
+      <div class="install-text">
+        <strong>App installieren</strong>
+        <span>Offline nutzen — direkt vom Homescreen starten</span>
+      </div>
+      <div class="install-actions">
+        <button class="install-btn" id="btn-install">Installieren</button>
+        <button class="install-dismiss" id="btn-install-dismiss">Später</button>
+      </div>
+    </div>
   </div>
 
   <!-- SESSION SCREEN -->
@@ -1158,9 +1234,62 @@
 })();
 </script>
 <script>
+// --- Service Worker Registration ---
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
+
+// --- PWA Install Prompt ---
+(function() {
+  let deferredPrompt = null;
+  const banner = document.getElementById('install-banner');
+  const btnInstall = document.getElementById('btn-install');
+  const btnDismiss = document.getElementById('btn-install-dismiss');
+
+  // Check if already installed (standalone mode)
+  if (window.matchMedia('(display-mode: standalone)').matches ||
+      window.navigator.standalone === true) {
+    return; // Already installed, don't show banner
+  }
+
+  // Check if user dismissed recently (24h cooldown)
+  const dismissed = localStorage.getItem('installDismissed');
+  if (dismissed && Date.now() - parseInt(dismissed) < 86400000) {
+    // Still within 24h cooldown
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+    return;
+  }
+
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault();
+    deferredPrompt = e;
+    banner.style.display = 'flex';
+  });
+
+  btnInstall.addEventListener('click', async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === 'accepted') {
+      banner.style.display = 'none';
+    }
+    deferredPrompt = null;
+  });
+
+  btnDismiss.addEventListener('click', () => {
+    banner.style.display = 'none';
+    deferredPrompt = null;
+    localStorage.setItem('installDismissed', Date.now().toString());
+  });
+
+  window.addEventListener('appinstalled', () => {
+    banner.style.display = 'none';
+    deferredPrompt = null;
+  });
+})();
 </script>
 
 </body>
